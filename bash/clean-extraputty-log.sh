@@ -82,3 +82,6 @@ grep -v '\[..-..-.. ..:..:......\] $' $TMP_OUTPUT > $INPUT
 
 # Remove temporary output file
 rm $TMP_OUTPUT
+
+# Convert to UNIX format
+dos2unix -q $INPUT
