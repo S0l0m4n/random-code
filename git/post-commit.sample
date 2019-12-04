@@ -1,0 +1,11 @@
+#!/bin/bash
+bash -x
+echo "Commit completed"
+echo "GIT_DIR = ${GIT_DIR}"
+if [ -e $GIT_DIR/cscope.out ]
+then
+  echo "Found cscope.out, rebuilding database now..."
+  cd $GIT_DIR
+  cscope -Rb
+  cd -
+fi
