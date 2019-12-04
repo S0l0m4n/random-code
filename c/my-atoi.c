@@ -6,7 +6,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define SIZEOF(x)   (sizeof(x)/sizeof(x[0]))
+#define CMD_BAD_ATOI        0xffffffff
+
+#define SIZEOF(x)           (sizeof(x)/sizeof(x[0]))
 
 const char * A[] =
 {
@@ -27,16 +29,20 @@ const char * A[] =
   "0xffffffff",
   "4294967295",
   "4294967294",
+  "a",
 };
 
 uint32_t CMD_atoi(const char *c)
 {
   uint32_t num = 0;
 
-	while (('\0' != *c) && (0xffffffff != num))
+  /* Check that there is at least one character */
+  num = ('\0' == *c) ? CMD_BAD_ATOI : 0;
+
+	while (('\0' != *c) && (CMD_BAD_ATOI != num))
   {
     num = ((0x30 <= *c) && (*c <= 0x39)) ?
-      (10 * num + (*c - 0x30)) : 0xffffffff;
+      (10 * num + (*c - 0x30)) : CMD_BAD_ATOI;
     c++;
   }
 
