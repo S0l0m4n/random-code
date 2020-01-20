@@ -1,3 +1,8 @@
+/**
+  * Unit testing for these functions:
+  *   - convertNtpTimeToDateTime
+  *   - convertDateTimeToNtpTime
+  */
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -180,6 +185,15 @@ static bool convertNtpTimeToDateTime( uint32_t ntp_time, RTC_InfoStruct *rtc )
   return ret;
 }
 
+/* ### Implementation of convertDateTimeToNtpTime from ntp.c ### */
+
+/* Convert from the date and time in the RTC info struct to the NTP epoch time
+ * in seconds (no fractional part) */
+static bool convertDateTimeToNtpTime( RTC_InfoStruct *rtc, uint32_t *ntp_time )
+{
+  return false;
+}
+
 /* ### Test cases ### */
 
 uint32_t TestTimes[] =
@@ -239,7 +253,7 @@ bool TestResults[] =
 /*[14]*/ true,
 };
 
-/* ### Main function for running unit test of convertNtpTimeToDateTime ### */
+/* ### Helper functions used in unit testing ### */
 
 /* ATTENTION: Does not check weekday field */
 bool checkDateTime(RTC_InfoStruct *info1, RTC_InfoStruct *info2)
@@ -266,7 +280,9 @@ void printDateTime(RTC_InfoStruct *rtcinfo)
       rtcinfo->day, MonthNames[rtcinfo->month], rtcinfo->year);
 };
 
-bool runTest(uint8_t i)
+/* ### Main function for running unit test of convertNtpTimeToDateTime ### */
+
+bool runTest_TimeToRtcInfo(uint8_t i)
 {
   bool result, ispass;
 
@@ -322,13 +338,83 @@ bool runTest(uint8_t i)
   return ispass;
 };
 
+/* ### Main function for running unit test of convertNtpTimeToDateTime ### */
+
+bool runTest_RtcInfoToTime(uint8_t i)
+{
+  bool result, ispass;
+
+  /* Define left and right sides of test conversion, "rtcinfo" and "time" */
+  RTC_InfoStruct rtcinfo = TestRtcInfo[i];
+  uint32_t time = TestTimes[i];
+
+  /* This holds the calculated time */
+  uint32_t test_time;
+
+  /* RUN TEST: convert function should yield test_time == time */
+  printf("Test %02d: ", i);
+  printDateTime(&rtcinfo);
+  printf(" --> ");
+
+  result = convertDateTimeToNtpTime(&rtcinfo, &test_time);
+
+  if (result == TestResults[i])
+  {
+    /* Test seems to have passed: confirm the result */
+    if (true == result)
+    {
+      printf("time = %10u ", test_time);
+      if (time == test_time)
+      {
+        /* Success! */
+        ispass = true;
+      }
+      else
+      {
+        /* Failure: something is wrong with convert function */
+        ispass = false;
+      }
+    }
+    else /* false == result */
+    {
+      /* Success: convert function detected bad input data */
+      printf("%-17s", "OUT OF BOUNDS");
+      ispass = true;
+    }
+  }
+  else
+  {
+    ispass = false;
+  }
+
+  if (ispass)
+  {
+    printf("PASS\n");
+  }
+  else
+  {
+    printf("FAIL\n");
+  }
+
+  return ispass;
+}
+
 int main(void)
 {
   int i;
 
+  /* Test conversion function: time -> rtcinfo */
+  printf("### TEST time -> rtcinfo\n");
   for (i = 0; i < sizeof(TestTimes)/sizeof(*TestTimes); i++)
   {
-    runTest(i);
+    runTest_TimeToRtcInfo(i);
+  }
+
+  /* Test conversion function: rtcinfo -> time */
+  printf("\n### TEST rtcinfo -> time\n");
+  for (i = 0; i < sizeof(TestTimes)/sizeof(*TestTimes); i++)
+  {
+    runTest_RtcInfoToTime(i);
   }
 
   return 0;
