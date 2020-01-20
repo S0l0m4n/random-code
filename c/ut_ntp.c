@@ -14,6 +14,8 @@
 #define SECS_PER_HOUR                 3600
 #define SECS_PER_MINUTE               60
 
+#define RTC_SUNDAY                    0x07
+
 /* ### Custom definitions for this unit test ### */
 
 const char *MonthNames[] =
@@ -44,27 +46,11 @@ typedef struct
    uint8_t seconds;
 } RTC_InfoStruct;
 
-struct NtpObject
-{
-  uint32_t time;
-  RTC_InfoStruct *rtcinfo;
-};
+/* ### Implementation of convertNtpTimeToDateTime from ntp.c ### */
 
-/* ### Mock implementations ### */
-
-#define DBG_WARNING
-#define DBG_NTP
-
-#define DBG_PRINTF(x)
-
-bool RTC_setDateTime(RTC_InfoStruct *rtcinfo)
-{
-  return true;
-};
-
-/* ### Implementation of ntpProcess() for ntp.c ### */
-
-static bool ntpProcess(struct NtpObject *ntp)
+/* Convert from the NTP epoch time (seconds only, not the fractional part) into
+ * a date and time as per the RTC info struct */
+static bool convertNtpTimeToDateTime( uint32_t ntp_time, RTC_InfoStruct *rtc )
 {
   bool ret = false;
 
@@ -74,7 +60,11 @@ static bool ntpProcess(struct NtpObject *ntp)
 
   uint32_t secs_per_year, secs_per_month;
 
-  uint32_t remainder = ntp->time;
+  /* The remainder starts from the given NTP epoch time (in seconds) */
+  uint32_t remainder = ntp_time;
+
+  /* Put the date/time calculated from the NTP epoch time into this struct */
+  RTC_InfoStruct rtc_info;
 
   /* Confirm time is after 01 Jan 2000 */
   if (remainder >= DIFF_SEC_1900_2000)
@@ -173,20 +163,18 @@ static bool ntpProcess(struct NtpObject *ntp)
 
     /* NOTE: Remainder is the number of seconds */
 
-    ntp->rtcinfo->year = year;
-    ntp->rtcinfo->month = month;
-    ntp->rtcinfo->day = day;
-    ntp->rtcinfo->hours = hours;
-    ntp->rtcinfo->minutes = minutes;
-    ntp->rtcinfo->seconds = remainder;
+    rtc_info.year = year;
+    rtc_info.month = month;
+    rtc_info.day = day;
+    rtc_info.hours = hours;
+    rtc_info.minutes = minutes;
+    rtc_info.seconds = remainder;
+    rtc_info.weekday = RTC_SUNDAY; /* not used */
 
-    ret = RTC_setDateTime(ntp->rtcinfo);
+    /* Assign the RTC info struct pointer to the calculated info */
+    *rtc = rtc_info;
 
     ret = true;
-  }
-  else
-  {
-    DBG_PRINTF((DBG_WARNING, DBG_NTP, "Invalid time received from server"));
   }
 
   return ret;
@@ -251,7 +239,7 @@ bool TestResults[] =
 /*[14]*/ true,
 };
 
-/* ### Main function for running unit test of ntpProcess() ### */
+/* ### Main function for running unit test of convertNtpTimeToDateTime ### */
 
 /* ATTENTION: Does not check weekday field */
 bool checkDateTime(RTC_InfoStruct *info1, RTC_InfoStruct *info2)
@@ -280,42 +268,39 @@ void printDateTime(RTC_InfoStruct *rtcinfo)
 
 bool runTest(uint8_t i)
 {
-  /* Define left and right sides of test equality, "time" and "rtcinfo" */
   bool result, ispass;
+
+  /* Define left and right sides of test conversion, "time" and "rtcinfo" */
   uint32_t time = TestTimes[i];
   RTC_InfoStruct rtcinfo = TestRtcInfo[i];
 
+  /* This holds the calculated RTC info */
   RTC_InfoStruct test_rtcinfo;
-  struct NtpObject ntp =
-  {
-    .time = time,
-    .rtcinfo = &test_rtcinfo,
-  };
 
-  /* RUN TEST: ntpProcess() should yield test_rtcinfo == rtcinfo */
+  /* RUN TEST: convert function should yield test_rtcinfo == rtcinfo */
   printf("Test %02d: time = %10u --> ", i, time);
-  result = ntpProcess(&ntp);
+  result = convertNtpTimeToDateTime(time, &test_rtcinfo);
 
   if (result == TestResults[i])
   {
     /* Test seems to have passed: confirm the result */
     if (true == result)
     {
-      printDateTime(ntp.rtcinfo);
-      if (true == checkDateTime(ntp.rtcinfo, &rtcinfo))
+      printDateTime(&test_rtcinfo);
+      if (true == checkDateTime(&test_rtcinfo, &rtcinfo))
       {
         /* Success! */
         ispass = true;
       }
       else
       {
-        /* Failure: something is wrong with ntpProcess() */
+        /* Failure: something is wrong with convert function */
         ispass = false;
       }
     }
     else /* false == result */
     {
-      /* Success: ntpProcess() detected bad input data */
+      /* Success: convert function detected bad input data */
       printf("%-21s", "OUT OF BOUNDS");
       ispass = true;
     }
