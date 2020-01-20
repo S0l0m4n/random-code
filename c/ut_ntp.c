@@ -191,7 +191,91 @@ static bool convertNtpTimeToDateTime( uint32_t ntp_time, RTC_InfoStruct *rtc )
  * in seconds (no fractional part) */
 static bool convertDateTimeToNtpTime( RTC_InfoStruct *rtc, uint32_t *ntp_time )
 {
-  return false;
+  uint8_t month = 1;
+
+  uint32_t secs_per_month = 0;
+
+  bool isleap = false;
+
+  /* Calculated NTP time, assuming we start from the year 2000 (=> year = 0) */
+  uint32_t calc_time = DIFF_SEC_1900_2000;
+
+  /* Add the number of seconds up to the current year */
+  calc_time += rtc->year * SECS_PER_YEAR;
+
+  /* Add an extra day's worth of seconds if we've past the year 2000 */
+  if (rtc->year > 0)
+  {
+    calc_time += SECS_PER_DAY;
+  }
+
+  /* Account for the other leap years (2004, 2008 etc.) */
+  calc_time += ((rtc->year - 1) / 4) * SECS_PER_DAY;
+
+  /* Add the number of seconds up to the current month */
+  while (month < rtc->month)
+  {
+    /* Determine the number of seconds in the current month */
+    switch (month)
+    {
+      /* Jan, Mar, May, Jul, Aug, Oct */
+      case 1:
+      case 3:
+      case 5:
+      case 7:
+      case 8:
+      case 10:
+        secs_per_month = 31 * SECS_PER_DAY;
+        break;
+
+      /* Feb */
+      case 2:
+        /* Check if the current year is a leap year */
+        isleap = (rtc->year == ((rtc->year / 4) * 4));
+        secs_per_month = (isleap ? 29 : 28) * SECS_PER_DAY;
+        break;
+
+      /* Apr, Jun, Sep, Nov */
+      case 4:
+      case 6:
+      case 9:
+      case 11:
+        secs_per_month = 30 * SECS_PER_DAY;
+        break;
+
+      /* Dec */
+      case 12:
+        /* Stop now, because we must be currently in Dec and therefore cannot
+         * add a full month's worth of seconds */
+        secs_per_month = 0;
+        break;
+
+      default:
+        break;
+    }
+
+    calc_time += secs_per_month;
+
+    month++;
+  }
+
+  /* Add the number of seconds up to the current day */
+  calc_time += (rtc->day - 1) * SECS_PER_DAY;
+
+  /* Add the number of seconds up to the current hour */
+  calc_time += rtc->hours * SECS_PER_HOUR;
+
+  /* Add the number of seconds up to the current minute */
+  calc_time += rtc->minutes * SECS_PER_MINUTE;
+
+  /* Add the last few seconds */
+  calc_time += rtc->seconds;
+
+  /* Assign the calculated time to the given pointer */
+  *ntp_time = calc_time;
+
+  /* Always return true */
+  return true;
 }
 
 /* ### Test cases ### */
@@ -378,12 +462,12 @@ bool runTest_RtcInfoToTime(uint8_t i)
     else /* false == result */
     {
       /* Success: convert function detected bad input data */
-      printf("%-17s", "OUT OF BOUNDS");
       ispass = true;
     }
   }
   else
   {
+    printf("%-18s", "BAD INPUT");
     ispass = false;
   }
 
