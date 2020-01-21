@@ -297,6 +297,8 @@ uint32_t TestTimes[] =
   3155673600 + 126230400,             /* [12] 00:00:00 01 Jan 2004 */
   3155673600 + 126230401,             /* [13] 00:00:01 01 Jan 2004 */
   4028012072,                         /* [14] 12:14:32 23 Aug 2027 */
+  3788611693,                         /* [15] xxx */
+  3788611693,                         /* [15] 16:08:13 21 Jan 2020 */
 };
 
 RTC_InfoStruct TestRtcInfo[] =
@@ -316,6 +318,8 @@ RTC_InfoStruct TestRtcInfo[] =
 /*[12]*/ { .hours=0,  .minutes=0,  .seconds=0,  .day=1,  .month=1,  .year=4  },
 /*[13]*/ { .hours=0,  .minutes=0,  .seconds=1,  .day=1,  .month=1,  .year=4  },
 /*[14]*/ { .hours=12, .minutes=14, .seconds=32, .day=23, .month=8,  .year=27 },
+/*[15]*/ { .hours=2,  .minutes=0,  .seconds=0,  .day=9,  .month=1,  .year=0  },
+/*[16]*/ { .hours=16, .minutes=8,  .seconds=13, .day=21, .month=1,  .year=20 },
 };
 
 bool TestResults[] =
@@ -335,6 +339,8 @@ bool TestResults[] =
 /*[12]*/ true,
 /*[13]*/ true,
 /*[14]*/ true,
+/*[15]*/ false,
+/*[16]*/ true,
 };
 
 /* ### Helper functions used in unit testing ### */
@@ -381,12 +387,13 @@ bool runTest_TimeToRtcInfo(uint8_t i)
   printf("Test %02d: time = %10u --> ", i, time);
   result = convertNtpTimeToDateTime(time, &test_rtcinfo);
 
+  printDateTime(&test_rtcinfo);
+
   if (result == TestResults[i])
   {
     /* Test seems to have passed: confirm the result */
     if (true == result)
     {
-      printDateTime(&test_rtcinfo);
       if (true == checkDateTime(&test_rtcinfo, &rtcinfo))
       {
         /* Success! */
@@ -401,7 +408,6 @@ bool runTest_TimeToRtcInfo(uint8_t i)
     else /* false == result */
     {
       /* Success: convert function detected bad input data */
-      printf("%-21s", "OUT OF BOUNDS");
       ispass = true;
     }
   }
@@ -410,14 +416,8 @@ bool runTest_TimeToRtcInfo(uint8_t i)
     ispass = false;
   }
 
-  if (ispass)
-  {
-    printf("PASS\n");
-  }
-  else
-  {
-    printf("FAIL\n");
-  }
+  printf("%s", (true == result) ? "  " : "* ");
+  printf("%s\n", ispass ? "PASS" : "FAIL");
 
   return ispass;
 };
@@ -438,16 +438,17 @@ bool runTest_RtcInfoToTime(uint8_t i)
   /* RUN TEST: convert function should yield test_time == time */
   printf("Test %02d: ", i);
   printDateTime(&rtcinfo);
-  printf(" --> ");
+  printf("--> ");
 
   result = convertDateTimeToNtpTime(&rtcinfo, &test_time);
+
+  printf("time = %10u ", test_time);
 
   if (result == TestResults[i])
   {
     /* Test seems to have passed: confirm the result */
     if (true == result)
     {
-      printf("time = %10u ", test_time);
       if (time == test_time)
       {
         /* Success! */
@@ -467,18 +468,11 @@ bool runTest_RtcInfoToTime(uint8_t i)
   }
   else
   {
-    printf("%-18s", "BAD INPUT");
     ispass = false;
   }
 
-  if (ispass)
-  {
-    printf("PASS\n");
-  }
-  else
-  {
-    printf("FAIL\n");
-  }
+  printf("%s", (true == result) ? "  " : "* ");
+  printf("%s\n", ispass ? "PASS" : "FAIL");
 
   return ispass;
 }
