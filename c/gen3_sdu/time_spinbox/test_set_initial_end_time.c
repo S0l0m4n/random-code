@@ -52,13 +52,6 @@ typedef struct
 /* --- */
 
 
-typedef struct
-{
-  uint8_t hr;
-  uint8_t min;
-} time_st;
-
-
 typedef enum
 {
   EDIT = SCH_PERIOD_EDIT,

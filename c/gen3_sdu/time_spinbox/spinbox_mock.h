@@ -12,6 +12,13 @@
 
 typedef struct
 {
+  uint8_t hr;
+  uint8_t min;
+} time_st;
+
+
+typedef struct
+{
   uint8_t lo;
   uint8_t hi;
   uint8_t step;

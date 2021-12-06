@@ -22,13 +22,6 @@ typedef enum
 
 typedef struct
 {
-  uint8_t hr;
-  uint8_t min;
-} time_st;
-
-
-typedef struct
-{
   time_st old_time;
   test_op_e op;
   time_st new_time;
