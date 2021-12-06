@@ -103,3 +103,9 @@ void GUI_ELEM_timeSpinbox_decMinute( GUI_time_spinbox_st *spinbox )
   GUI_ELEM_spinbox_setValue(&(spinbox->minute), minute);
   spinbox->value.minute = minute;
 }
+
+
+void GUI_ELEM_timeSpinbox_refreshValue( GUI_time_spinbox_st *spinbox )
+{
+  (void)spinbox;
+}
