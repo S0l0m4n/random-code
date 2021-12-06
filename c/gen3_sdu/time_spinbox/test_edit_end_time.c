@@ -197,9 +197,13 @@ static void incEndTime( void )
 
 static void decEndTime( void )
 {
-  uint8_t end_hour = time_spinbox.value.hour;
+  day_time_st end_time;
+
+  GUI_SCH_setDayTimeFromSpinbox(&end_time, &time_spinbox);
+
+  uint8_t end_hour = end_time.hour;
   uint8_t start_hour = edit_info->period.start.hour;
-  uint8_t end_minute = time_spinbox.value.minute;
+  uint8_t end_minute = end_time.min;
   uint8_t start_minute = edit_info->period.start.min;
 
   if (time_spinbox.hour.focused)
@@ -220,11 +224,20 @@ static void decEndTime( void )
   }
   else if (time_spinbox.minute.focused)
   {
-    if (false ==
+    /* do not roll over to the next day at 23:45, or reset the minute to zero if
+     * the start hour and end hour are the same */
+    if ((false ==
         (((23 == end_hour) || (start_hour == end_hour)) && (45 <= end_minute)))
+    /* do not decrease the end minute if it is not more than 15 min above the
+     * start minute, when the start hour and end hour are the same */
+    &&  (false ==
+        ((start_hour == end_hour) && (end_minute <= start_minute + 15)))
+    /* do not decrease the end minute from zero if the start time is not more
+     * than 15 min less than the end time */
+    &&  (false ==
+        ((start_hour + 1 == end_hour) && (0==end_minute) && (start_minute>=45)))
+    )
     {
-      /* do not roll over to the next day at 23:45, or reset the minute to zero
-       * if the start hour and end hour are the same */
       GUI_ELEM_timeSpinbox_decMinute(&time_spinbox);
     }
   }
