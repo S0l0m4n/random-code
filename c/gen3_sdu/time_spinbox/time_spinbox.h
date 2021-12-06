@@ -30,6 +30,9 @@ extern void GUI_ELEM_timeSpinbox_incMinute( GUI_time_spinbox_st *spinbox );
 extern void GUI_ELEM_timeSpinbox_decHour( GUI_time_spinbox_st *spinbox );
 extern void GUI_ELEM_timeSpinbox_decMinute( GUI_time_spinbox_st *spinbox );
 extern void GUI_ELEM_timeSpinbox_refreshValue( GUI_time_spinbox_st *spinbox );
+/* --- additional functions defined for mocking --- */
+extern void GUI_ELEM_spinbox_setValueFrom24hTime(
+    GUI_time_spinbox_st *spinbox, time_st time );
 
 
 #endif

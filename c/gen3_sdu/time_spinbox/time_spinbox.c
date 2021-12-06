@@ -109,3 +109,20 @@ void GUI_ELEM_timeSpinbox_refreshValue( GUI_time_spinbox_st *spinbox )
 {
   (void)spinbox;
 }
+
+
+void GUI_ELEM_spinbox_setValueFrom24hTime(
+    GUI_time_spinbox_st *spinbox, time_st time )
+{
+  if (time.hr > 12)
+  {
+    spinbox->value.hour = time.hr % 12;
+    spinbox->value.is_am = false;
+  }
+  else
+  {
+    spinbox->value.hour = time.hr;
+    spinbox->value.is_am = true;
+  }
+  spinbox->value.minute = time.min;
+}
