@@ -7,6 +7,7 @@
 #define SPINBOX_MOCK_H
 
 
+#include <stdbool.h>
 #include <stdint.h>
 
 
@@ -23,6 +24,7 @@ typedef struct
   uint8_t hi;
   uint8_t step;
   uint8_t value;
+  bool focused;
 } GUI_spinbox_t;
 
 
