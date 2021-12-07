@@ -35,9 +35,9 @@ typedef struct
 
 const char *op_names[] =
 {
-  "INC_HR",
+  "INC_HR ",
   "INC_MIN",
-  "DEC_HR",
+  "DEC_HR ",
   "DEC_MIN",
 };
 
@@ -45,9 +45,39 @@ const char *op_names[] =
 test_case_st test_cases[] =
 {
   /* [  0 ] */  { { .hr = 12, .min = 47 }, { .hr = 13, .min =  0 },
-                  INC_MIN,                 { .hr = 13, .min = 15 } },
-  /* [  1 ] */  { { .hr = 12, .min = 47 }, { .hr = 13, .min =  0 },
                   DEC_MIN,                 { .hr = 13, .min =  0 } },
+  /* [  1 ] */  { { .hr = 12, .min = 44 }, { .hr = 13, .min =  0 },
+                  DEC_MIN,                 { .hr = 12, .min = 45 } },
+  /* [  2 ] */  { { .hr = 17, .min = 30 }, { .hr = 18, .min =  0 },
+                  DEC_MIN,                 { .hr = 17, .min = 45 } },
+  /* [  3 ] */  { { .hr = 17, .min = 30 }, { .hr = 17, .min = 45 },
+                  DEC_MIN,                 { .hr = 17, .min = 45 } },
+  /* [  4 ] */  { { .hr = 23, .min = 30 }, { .hr = 23, .min = 45 },
+                  DEC_MIN,                 { .hr = 23, .min = 45 } },
+  /* [  5 ] */  { { .hr = 23, .min = 15 }, { .hr = 23, .min = 45 },
+                  DEC_MIN,                 { .hr = 23, .min = 30 } },
+  /* [  6 ] */  { { .hr = 21, .min = 45 }, { .hr = 22, .min =  5 },
+                  DEC_MIN,                 { .hr = 22, .min =  0 } },
+  /* [  7 ] */  { { .hr = 21, .min = 45 }, { .hr = 22, .min =  0 },
+                  DEC_MIN,                 { .hr = 22, .min =  0 } },
+  /* [  8 ] */  { { .hr = 21, .min = 30 }, { .hr = 22, .min =  0 },
+                  DEC_MIN,                 { .hr = 21, .min = 45 } },
+  /* [  9 ] */  { { .hr = 21, .min = 30 }, { .hr = 22, .min =  0 },
+                  DEC_HR,                  { .hr = 21, .min = 30 } },
+  /* [ 10 ] */  { { .hr = 21, .min = 30 }, { .hr = 21, .min = 30 },
+                  DEC_HR,                  { .hr = 21, .min = 30 } },
+  /* [ 11 ] */  { { .hr = 20, .min = 30 }, { .hr = 22, .min =  0 },
+                  DEC_HR,                  { .hr = 21, .min =  0 } },
+  /* [ 12 ] */  { { .hr = 12, .min = 47 }, { .hr = 13, .min =  0 },
+                  INC_MIN,                 { .hr = 13, .min = 15 } },
+  /* [ 13 ] */  { { .hr = 20, .min = 15 }, { .hr = 23, .min = 30 },
+                  INC_MIN,                 { .hr = 23, .min = 45 } },
+  /* [ 14 ] */  { { .hr = 20, .min = 15 }, { .hr = 23, .min = 45 },
+                  INC_MIN,                 { .hr = 23, .min = 45 } },
+  /* [ 15 ] */  { { .hr = 20, .min = 15 }, { .hr = 20, .min = 45 },
+                  INC_HR,                  { .hr = 21, .min = 45 } },
+  /* [ 16 ] */  { { .hr = 20, .min = 15 }, { .hr = 23, .min = 15 },
+                  INC_HR,                  { .hr = 23, .min = 15 } },
 };
 
 
@@ -71,7 +101,8 @@ int main( void )
   uint8_t num_tests = ARRAY_SIZE(test_cases);
   bool pass = true;
   test_case_st tc;
-  day_time_st actual_end_time;
+  uint8_t actual_end_hour;
+  uint8_t actual_end_min;
 
   /* set up global pointer */
   edit_info = &edit_info_obj;
@@ -124,9 +155,9 @@ int main( void )
     }
 
     /* check result */
-    GUI_SCH_setDayTimeFromSpinbox(&actual_end_time, &time_spinbox);
-    if ((tc.desired_end_time.hr != actual_end_time.hour)
-    ||  (tc.desired_end_time.min != actual_end_time.min))
+    GUI_SCH_getDayTimeFromSpinbox(&actual_end_hour, &actual_end_min, &time_spinbox);
+    if ((tc.desired_end_time.hr != actual_end_hour)
+    ||  (tc.desired_end_time.min != actual_end_min))
     {
       pass = false;
     }
@@ -149,7 +180,7 @@ int main( void )
     {
       /* print actual result */
       printf(" (%02d:%02d)\n",
-        actual_end_time.hour, actual_end_time.min);
+        actual_end_hour, actual_end_min);
     }
   }
 
@@ -169,9 +200,10 @@ static void updateEditInfoPeriod( void )
 
 static void incEndTime( void )
 {
-  uint8_t end_hour = time_spinbox.value.hour;
-  uint8_t start_hour = edit_info->period.start.hour;
-  uint8_t end_minute = time_spinbox.value.minute;
+  uint8_t end_hour = 0;
+  uint8_t end_minute = 0;
+
+  GUI_SCH_getDayTimeFromSpinbox(&end_hour, &end_minute, &time_spinbox);
 
   if (time_spinbox.hour.focused)
   {
@@ -183,11 +215,9 @@ static void incEndTime( void )
   }
   else if (time_spinbox.minute.focused)
   {
-    if (false ==
-        (((23 == end_hour) || (start_hour == end_hour)) && (45 <= end_minute)))
+    if (false == ((23 == end_hour) && (45 <= end_minute)))
     {
-      /* do not roll over to the next day at 23:45, or reset the minute to zero
-       * if the start hour and end hour are the same */
+      /* do not roll over to the next day at 23:45 */
       GUI_ELEM_timeSpinbox_incMinute(&time_spinbox);
     }
   }
@@ -197,14 +227,12 @@ static void incEndTime( void )
 
 static void decEndTime( void )
 {
-  day_time_st end_time;
-
-  GUI_SCH_setDayTimeFromSpinbox(&end_time, &time_spinbox);
-
-  uint8_t end_hour = end_time.hour;
+  uint8_t end_hour = 0;
+  uint8_t end_minute = 0;
   uint8_t start_hour = edit_info->period.start.hour;
-  uint8_t end_minute = end_time.min;
   uint8_t start_minute = edit_info->period.start.min;
+
+  GUI_SCH_getDayTimeFromSpinbox(&end_hour, &end_minute, &time_spinbox);
 
   if (time_spinbox.hour.focused)
   {
@@ -213,10 +241,10 @@ static void decEndTime( void )
     {
       GUI_ELEM_timeSpinbox_decHour(&time_spinbox);
     }
-
     /* adjust the end minute if it ends up being the same as the start minute
      * when the start hour and the end hour are the same */
-    if ((start_hour == time_spinbox.value.hour) && (end_minute < start_minute))
+    GUI_SCH_getDayTimeFromSpinbox(&end_hour, &end_minute, &time_spinbox);
+    if ((start_hour == end_hour) && (end_minute < start_minute))
     {
       time_spinbox.value.minute = start_minute;
       GUI_ELEM_timeSpinbox_refreshValue(&time_spinbox);
@@ -224,13 +252,9 @@ static void decEndTime( void )
   }
   else if (time_spinbox.minute.focused)
   {
-    /* do not roll over to the next day at 23:45, or reset the minute to zero if
-     * the start hour and end hour are the same */
-    if ((false ==
-        (((23 == end_hour) || (start_hour == end_hour)) && (45 <= end_minute)))
     /* do not decrease the end minute if it is not more than 15 min above the
      * start minute, when the start hour and end hour are the same */
-    &&  (false ==
+    if ((false ==
         ((start_hour == end_hour) && (end_minute <= start_minute + 15)))
     /* do not decrease the end minute from zero if the start time is not more
      * than 15 min less than the end time */
