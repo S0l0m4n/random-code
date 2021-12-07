@@ -10,6 +10,9 @@
 #include "gen3_sdu_defs.h"
 
 
+#define MINS_IN_DAY (24 * 60)
+
+
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof(x[0]))
 
 
@@ -52,6 +55,10 @@ test_case_st test_cases[] =
                   EDIT,                    { .hr = 15, .min = 45 } },
   /* [  5 ] */  { { .hr = 14, .min =  0 }, { .hr = 12, .min = 45 },
                   EDIT,                    { .hr = 15, .min =  0 } },
+  /* [  6 ] */  { { .hr =  2, .min =  0 }, { .hr =  0, .min =  0 },
+                  EDIT,                    { .hr =  3, .min =  0 } },
+  /* [  7 ] */  { { .hr =  2, .min =  0 }, { .hr = 99, .min =  0 },
+                  EDIT,                    { .hr =  3, .min =  0 } },
 };
 
 
@@ -129,7 +136,8 @@ static void setEditPeriodEndTime( void )
   uint16_t start_time_day_min = e->period.start.hour * 60 + e->period.start.min;
   uint16_t end_time_day_min = e->period.end.hour * 60 + e->period.end.min;
 
-  if (end_time_day_min >= start_time_day_min + 15)
+  if ((end_time_day_min >= start_time_day_min + 15)
+  &&  (end_time_day_min < MINS_IN_DAY))
   {
     /* end time is valid, so we won't change it */
     return;
