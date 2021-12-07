@@ -50,8 +50,8 @@ typedef struct
 } SCH_edit_st;
 
 
-extern void GUI_SCH_setDayTimeFromSpinbox(
-    day_time_st *time, GUI_time_spinbox_st *spinbox );
+extern void GUI_SCH_getDayTimeFromSpinbox(
+    uint8_t *day_hour, uint8_t *day_min, GUI_time_spinbox_st *spinbox );
 
 
 #endif

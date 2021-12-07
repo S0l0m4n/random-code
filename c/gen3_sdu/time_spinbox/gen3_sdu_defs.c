@@ -6,8 +6,8 @@
 #include "gen3_sdu_defs.h"
 
 
-void GUI_SCH_setDayTimeFromSpinbox(
-    day_time_st *time, GUI_time_spinbox_st *spinbox )
+void GUI_SCH_getDayTimeFromSpinbox(
+    uint8_t *day_hour, uint8_t *day_min, GUI_time_spinbox_st *spinbox )
 {
   uint8_t hour = spinbox->value.hour;
 
@@ -22,6 +22,6 @@ void GUI_SCH_setDayTimeFromSpinbox(
     hour += 12;
   }
 
-  time->hour = hour;
-  time->min = spinbox->value.minute;
+  *day_hour = hour;
+  *day_min = spinbox->value.minute;
 }
