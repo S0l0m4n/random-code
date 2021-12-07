@@ -55,7 +55,11 @@ test_case_st test_cases[] =
 };
 
 
-static void setEditPeriodEndTime( SCH_edit_st *e );
+static SCH_edit_st edit_info_obj;
+static SCH_edit_st *edit_info;
+
+
+static void setEditPeriodEndTime( void );
 
 
 int main( void )
@@ -63,25 +67,27 @@ int main( void )
   uint8_t i = 0;
   uint8_t num_tests = ARRAY_SIZE(test_cases);
   bool pass = true;
-  SCH_edit_st edit_info;
   test_case_st tc;
+
+  /* set up global pointer */
+  edit_info = &edit_info_obj;
 
   for (i = 0; (i < num_tests) && pass; i++)
   {
     /* --- set up test --- */
     tc = test_cases[i];
-    edit_info.period.start.hour = tc.start_time.hr;
-    edit_info.period.start.min = tc.start_time.min;
-    edit_info.period.end.hour = tc.initial_end_time.hr;
-    edit_info.period.end.min = tc.initial_end_time.min;
-    edit_info.action = tc.op;
+    edit_info->period.start.hour = tc.start_time.hr;
+    edit_info->period.start.min = tc.start_time.min;
+    edit_info->period.end.hour = tc.initial_end_time.hr;
+    edit_info->period.end.min = tc.initial_end_time.min;
+    edit_info->action = tc.op;
 
     /* run test */
-    setEditPeriodEndTime(&edit_info);
+    setEditPeriodEndTime();
 
     /* check result */
-    if ((tc.desired_end_time.hr != edit_info.period.end.hour)
-    ||  (tc.desired_end_time.min != edit_info.period.end.min))
+    if ((tc.desired_end_time.hr != edit_info->period.end.hour)
+    ||  (tc.desired_end_time.min != edit_info->period.end.min))
     {
       pass = false;
     }
@@ -104,7 +110,7 @@ int main( void )
     {
       /* print actual result */
       printf(" (%02d:%02d)\n",
-        edit_info.period.end.hour, edit_info.period.end.min);
+        edit_info->period.end.hour, edit_info->period.end.min);
     }
   }
 
@@ -117,8 +123,9 @@ int main( void )
 }
 
 
-static void setEditPeriodEndTime( SCH_edit_st *e )
+static void setEditPeriodEndTime( void )
 {
+  SCH_edit_st *e = edit_info;
   uint16_t start_time_day_min = e->period.start.hour * 60 + e->period.start.min;
   uint16_t end_time_day_min = e->period.end.hour * 60 + e->period.end.min;
 
