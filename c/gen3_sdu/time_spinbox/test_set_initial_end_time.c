@@ -24,8 +24,9 @@ typedef enum
 typedef struct
 {
   time_st start_time;
+  time_st initial_end_time;
   test_op_e op;
-  time_st end_time;
+  time_st desired_end_time;
 } test_case_st;
 
 
@@ -39,12 +40,18 @@ const char *op_names[] =
 
 test_case_st test_cases[] =
 {
-  /* [  0 ] */  { { .hr = 12, .min = 47 }, EDIT,  { .hr = 13, .min = 47 } },
-  /* [  1 ] */  { { .hr = 19, .min = 36 }, EDIT,  { .hr = 20, .min = 36 } },
-  /* [  2 ] */  { { .hr =  8, .min = 15 }, EDIT,  { .hr =  9, .min = 15 } },
-  /* [  3 ] */  { { .hr = 23, .min = 16 }, EDIT,  { .hr = 23, .min = 16 } },
-  /* [  4 ] */  { { .hr = 23, .min = 45 }, EDIT,  { .hr = 23, .min = 45 } },
-  /* [  5 ] */  { { .hr =  0, .min = 59 }, EDIT,  { .hr =  1, .min = 59 } },
+  /* [  0 ] */  { { .hr = 12, .min = 47 }, { .hr = 13, .min = 45 },
+                  EDIT,                    { .hr = 13, .min = 45 } },
+  /* [  1 ] */  { { .hr = 19, .min = 36 }, { .hr = 13, .min = 45 },
+                  EDIT,                    { .hr = 20, .min = 36 } },
+  /* [  2 ] */  { { .hr = 19, .min = 30 }, { .hr = 19, .min = 45 },
+                  EDIT,                    { .hr = 19, .min = 45 } },
+  /* [  3 ] */  { { .hr = 23, .min = 45 }, { .hr = 13, .min = 45 },
+                  EDIT,                    { .hr = 23, .min = 45 } },
+  /* [  4 ] */  { { .hr = 14, .min =  0 }, { .hr = 15, .min = 45 },
+                  EDIT,                    { .hr = 15, .min = 45 } },
+  /* [  5 ] */  { { .hr = 14, .min =  0 }, { .hr = 12, .min = 45 },
+                  EDIT,                    { .hr = 15, .min =  0 } },
 };
 
 
@@ -61,28 +68,32 @@ int main( void )
 
   for (i = 0; (i < num_tests) && pass; i++)
   {
-    /* set up test */
+    /* --- set up test --- */
     tc = test_cases[i];
     edit_info.period.start.hour = tc.start_time.hr;
     edit_info.period.start.min = tc.start_time.min;
+    edit_info.period.end.hour = tc.initial_end_time.hr;
+    edit_info.period.end.min = tc.initial_end_time.min;
     edit_info.action = tc.op;
 
     /* run test */
     setEditPeriodEndTime(&edit_info);
 
     /* check result */
-    if ((tc.end_time.hr != edit_info.period.end.hour)
-    ||  (tc.end_time.min != edit_info.period.end.min))
+    if ((tc.desired_end_time.hr != edit_info.period.end.hour)
+    ||  (tc.desired_end_time.min != edit_info.period.end.min))
     {
       pass = false;
     }
 
     /* print result */
-    printf("test %2d: %02d:%02d -> (%s) -> %02d:%02d -> %s",
+    printf("test %2d: start %02d:%02d | end: %02d:%02d -> (%s) -> "
+           "%02d:%02d -> %s",
         i, 
         tc.start_time.hr, tc.start_time.min,
+        tc.initial_end_time.hr, tc.initial_end_time.min,
         op_names[tc.op],
-        tc.end_time.hr, tc.end_time.min,
+        tc.desired_end_time.hr, tc.desired_end_time.min,
         pass ? "PASS" : "FAIL");
 
     if (pass)
@@ -108,15 +119,25 @@ int main( void )
 
 static void setEditPeriodEndTime( SCH_edit_st *e )
 {
+  uint16_t start_time_day_min = e->period.start.hour * 60 + e->period.start.min;
+  uint16_t end_time_day_min = e->period.end.hour * 60 + e->period.end.min;
+
+  if (end_time_day_min >= start_time_day_min + 15)
+  {
+    /* end time is valid, so we won't change it */
+    return;
+  }
+
   if (e->period.start.hour < 23)
   {
     e->period.end.hour = e->period.start.hour + 1;
   }
   else
   {
-    /* leave the end time the same as the start time */
+    /* leave the end hour the same as the start hour */
     e->period.end.hour = e->period.start.hour;
   }
-  /* minute remains the same always */
+
+  /* ensure the end minute is the same as the start minute */
   e->period.end.min = e->period.start.min;
 }
