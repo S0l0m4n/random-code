@@ -25,6 +25,7 @@ typedef struct
 } GUI_time_spinbox_st;
 
 
+extern void GUI_ELEM_timeSpinbox_create( GUI_time_spinbox_st *spinbox );
 extern void GUI_ELEM_timeSpinbox_incHour( GUI_time_spinbox_st *spinbox );
 extern void GUI_ELEM_timeSpinbox_incMinute( GUI_time_spinbox_st *spinbox );
 extern void GUI_ELEM_timeSpinbox_decHour( GUI_time_spinbox_st *spinbox );

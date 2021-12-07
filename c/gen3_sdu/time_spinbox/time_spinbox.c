@@ -107,7 +107,9 @@ void GUI_ELEM_timeSpinbox_decMinute( GUI_time_spinbox_st *spinbox )
 
 void GUI_ELEM_timeSpinbox_refreshValue( GUI_time_spinbox_st *spinbox )
 {
-  (void)spinbox;
+  GUI_ELEM_spinbox_setValue(&(spinbox->hour), spinbox->value.hour);
+  GUI_ELEM_spinbox_setValue(&(spinbox->minute), spinbox->value.minute);
+  setAmPmLabel(spinbox, spinbox->value.is_am);
 }
 
 
@@ -125,4 +127,6 @@ void GUI_ELEM_spinbox_setValueFrom24hTime(
     spinbox->value.is_am = true;
   }
   spinbox->value.minute = time.min;
+  GUI_ELEM_spinbox_setValue(&(spinbox->hour), spinbox->value.hour);
+  GUI_ELEM_spinbox_setValue(&(spinbox->minute), spinbox->value.minute);
 }
