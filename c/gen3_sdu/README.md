@@ -16,3 +16,8 @@ $: gcc -Wall test_set_initial_end_time.c
 ```
 $: gcc -Wall test_edit_end_time.c gen3_sdu_defs.c spinbox_mock.c time_spinbox.c
 ```
+
+### Remove days from block under edit
+```
+$: gcc -Wall test_remove_days_from_block_under_edit.c
+```
