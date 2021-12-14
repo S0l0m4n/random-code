@@ -21,3 +21,8 @@ $: gcc -Wall test_edit_end_time.c gen3_sdu_defs.c spinbox_mock.c time_spinbox.c
 ```
 $: gcc -Wall test_remove_days_from_block_under_edit.c
 ```
+
+### Reverse byte
+```
+$: gcc -Wall test_reverse_byte.c
+```
