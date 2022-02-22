@@ -1,5 +1,8 @@
 /**
   * TEST FUNCTION
+  *
+  * Set initial end time. If the end time is NOT a valid time greater than the
+  * start time, then set it to be 1 hour after the start time (if possible).
   */
 
 
@@ -59,6 +62,8 @@ test_case_st test_cases[] =
                   EDIT,                    { .hr =  3, .min =  0 } },
   /* [  7 ] */  { { .hr =  2, .min =  0 }, { .hr = 99, .min =  0 },
                   EDIT,                    { .hr =  3, .min =  0 } },
+  /* [  8 ] */  { { .hr = 13, .min =  0 }, { .hr = 13, .min =  0 },
+                  EDIT,                    { .hr = 14, .min =  0 } },
 };
 
 
