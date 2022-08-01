@@ -1,0 +1,88 @@
+/**
+ * @file CellResponseCodeType.h
+ *
+ * https://www.wagz.com
+ */
+
+#pragma once
+
+typedef enum
+{
+    GRC_ok,
+    GRC_at,
+    GRC_ate0,
+    GRC_error,
+    GRC_cmeError,
+    GRC_simReady,
+    GRC_phoneReady,
+    GRC_gsmRegStatus,
+    GRC_lteRegStatus,
+    GRC_gprsRegStatus,
+    GRC_tcpStackIdle,
+    GRC_tcpStackStart,
+    GRC_tcpStackConfig,
+    GRC_tcpStackActivating,
+    GRC_tcpStackGprsActivated,
+    GRC_tcpStackIpAddress,
+    GRC_tcpStackTcpConnecting,
+    GRC_tcpStackTcpClosed,
+    GRC_tcpStackTcpConnected,
+    GRC_tcpStackGprsDeactivated,
+    GRC_sslCertIncorrect,
+    GRC_sslCertCorrect,
+    GRC_connectionState,
+    GRC_dataReceived,
+    GRC_dataReceivedForTcp,
+    GRC_sendOk,
+    GRC_sendFail,
+    GRC_closeOk,
+    GRC_deactOk,
+    GRC_connect,
+    GRC_cnum,
+    GRC_multislotClass,
+    GRC_ccid,
+    GRC_cgsn,
+    GRC_fwVer,
+    GRC_qnitz,
+    GRC_ctzu,
+    GRC_cclk,
+    GRC_gotIpAddress,
+    GRC_lteGnssPrio,
+    GRC_gnssState,
+    GRC_iotMode,
+    GRC_csq,
+    GRC_uploadPackage,
+    GRC_nmea,
+    GRC_location,
+    GRC_gnssEstimatedError,
+    GRC_agpsState,
+    GRC_getIpFromDns,
+    GRC_gnssConstellation,
+    GRC_qcsq,
+    GRC_qnwinfo,
+    GRC_qptwedrxs,
+    GRC_xtraTime,
+    GRC_xtraInfo,
+    GRC_xtraAutoDownload,
+    //Add new command response above
+    GRC_urcCodes, // Modem notifications shall be greater than this value
+    GRC_urcConnectionClosed = GRC_urcCodes,
+    GRC_urcConnectionEvent,
+    GRC_urcDataReceived,
+    GRC_urcDataReceivedForTcp,
+    GRC_urcNormalPowerDown,
+    GRC_urcPdpDeact,
+    GRC_urcTcpConnectionEvent,
+    GRC_urcTcpConnectionClosed,
+    GRC_urcOtaStartDownload,
+    GRC_urcOtaDownloading,
+    GRC_urcOtaDownloaded,
+    GRC_urcOtaResetting,
+    GRC_urcOtaUpdate,
+    GRC_urcOtaUpdating,
+    GRC_urcOtaUpdated,
+    // Add new URC codes above
+    GRC_length,
+    GRC_unknown,  // Indication that response from modem is not known to our system
+    GRC_none      // Indication that response was not received at all
+} CellResponseCode;

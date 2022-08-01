@@ -1,0 +1,5 @@
+Here is a basic makefile example from which to build on for other projects. Note
+that this makefile is in the Ublox directory but refers to include files above
+this directory.
+
+I use the Debug.h file to mock the `LOG_INFO`/`LOG_WARNING` macros.
