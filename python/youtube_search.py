@@ -1,6 +1,7 @@
 import argparse
-import os
 from googleapiclient.discovery import build
+import os
+import shutil
 
 # Set up the YouTube Data API v3
 api_key = "AIzaSyDKhPSuDV82MYa-OTzu-TrrU9ij5ot1YRI" # my API key
@@ -15,27 +16,53 @@ def search_youtube(query):
             maxResults=1
         ).execute()
 
-        if "items" in search_response:
+        if search_response['items'] != []:
             video_id = search_response["items"][0]["id"]["videoId"]
             video_url = f"https://www.youtube.com/watch?v={video_id}"
-            print(search_response)
             return video_url
         else:
-            return "No results found."
+            print("No results found")
+            return ValueError
 
     except Exception as e:
-        return str(e)
+        print(str(e))
+        return e
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Search for a music video on YouTube.")
-    parser.add_argument("song", type=str, help="Name of the song to search for on YouTube")
+    parser.add_argument("-songs_file", type=str, help="List of songs to look up")
     args = parser.parse_args()
 
-    song_name = args.song
-    video_url = search_youtube(song_name)
+    if args.songs_file is None:
+        print("Please supply songs file")
+        exit(0)
 
-    if video_url:
-        print(f"Found the music video for '{song_name}':")
-        print(video_url)
-    else:
-        print(f"No results found for '{song_name}'.")
+    # We will compose the contents of the new file in this string
+    out_text = ""
+
+    # Back up the original file
+    shutil.copyfile(args.songs_file, args.songs_file + ".bak")
+
+    with open(args.songs_file, 'r') as f:
+        for line in f:
+            # First write back the line as is without the newline
+            out_text += line[:-1]
+
+            # Extract the song name and look up video
+            fields = line.split('|')
+            song_name = fields[0].strip()
+            try:
+                video_url = search_youtube(song_name)
+                print("Found the music video for {:40}:"
+                        .format(f"'{song_name}'"), end=' ')
+                print(video_url)
+            except:
+                print(f"No results found for '{song_name}'")
+                video_url = ""
+
+            # Write the video URL to the file at the end of the line
+            out_text += f" | {video_url}\n"
+
+    # Write the new contents back to the original file
+    with open(args.songs_file, 'w') as f:
+        f.write(out_text)
