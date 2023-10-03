@@ -44,24 +44,33 @@ if __name__ == "__main__":
     shutil.copyfile(args.songs_file, args.songs_file + ".bak")
 
     with open(args.songs_file, 'r') as f:
+        count = 0
         for line in f:
             # First write back the line as is without the newline
             out_text += line[:-1]
 
+            count += 1
+
             # Extract the song name and look up video
             fields = line.split('|')
             song_name = fields[0].strip()
-            try:
-                video_url = search_youtube(song_name)
-                print("Found the music video for {:40}:"
-                        .format(f"'{song_name}'"), end=' ')
-                print(video_url)
-            except:
-                print(f"No results found for '{song_name}'")
-                video_url = ""
 
-            # Write the video URL to the file at the end of the line
-            out_text += f" | {video_url}\n"
+            if len(fields) > 2:
+                # We already have a URL for this video, so move onto the next one
+                pass
+            else:
+                try:
+                    video_url = search_youtube(song_name)
+                    print("Found the music video for #{} {:40}:"
+                            .format(count, f"'{song_name}'"), end=' ')
+                    print(video_url)
+                    # Write the video URL to the file at the end of the line
+                    out_text += f" | {video_url}"
+                except:
+                    print(f"No results found for #{count} '{song_name}'")
+
+            # Write final new line
+            out_text += '\n'
 
     # Write the new contents back to the original file
     with open(args.songs_file, 'w') as f:
