@@ -65,7 +65,7 @@ if __name__ == "__main__":
                             .format(count, f"'{song_name}'"), end=' ')
                     print(video_url)
                     # Write the video URL to the file at the end of the line
-                    out_text += f" | {video_url}"
+                    out_text += f" | {video_url} | -"
                 except:
                     print(f"No results found for #{count} '{song_name}'")
 
