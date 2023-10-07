@@ -39,14 +39,33 @@ def mark_completed(f, line):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Download music from YouTube.")
-    parser.add_argument("-songs_file", type=str, help="List of songs to download")
+    parser.add_argument("-songs_file", type=str, help="list of songs to download")
+    parser.add_argument("-out_dir", type=str, help="download directory")
     args = parser.parse_args()
 
     if args.songs_file is None:
         print("Please supply songs file")
         exit(0)
+    elif args.out_dir is None:
+        print("Please supply download directory")
+        exit(0)
+
+    try:
+        os.listdir(args.out_dir)
+    except FileNotFoundError:
+        # Download directory does not exist, so create it
+        try:
+            os.mkdir(args.out_dir)
+        except:
+            print("Could not create download directory")
+            exit(0)
+
+    home_dir = os.getcwd()
 
     with open(args.songs_file, 'rb+') as f:
+        # Move to download directory for placing songs
+        os.chdir(args.out_dir)
+
         for line in f:
             # Extract the song name and look up video
             fields = line.decode().split('|')
@@ -61,3 +80,7 @@ if __name__ == "__main__":
 
             if (download_song(song, artist, url)):
                 mark_completed(f, line)
+
+    if (home_dir != os.getcwd()):
+        # Return to original directory
+        os.chdir(home_dir)
