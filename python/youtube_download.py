@@ -4,10 +4,15 @@ import argparse
 import os
 import sys
 
+youtube_cmd = \
+        "youtube-dl --extract-audio --audio-format mp3 -o \"{file_name}\" {url}"
+
 def download_song(artist, song, url):
-    file_name = '"' + artist + "__" + song + ".mp3" + '"'
-    os.system(f"touch {file_name}")
-    return True
+    artist_part = '-'.join(artist.lower().split())
+    song_part = '-'.join(song.lower().split())
+    file_name = artist_part + "__" + song_part + ".mp3"
+    return 0 == os.system(youtube_cmd.format(file_name=file_name, url=url))
+    # (Command returns 0 on success)
 
 def mark_completed(f, line):
     """
@@ -74,11 +79,21 @@ if __name__ == "__main__":
             artist = fields[1]
             try:
                 url = fields[2]
+                try:
+                    mark  = fields[3]
+                    if mark == '#':
+                        print(f"Already downloaded: {song}")
+                        continue
+                except IndexError:
+                    # Song not marked with `-` or `#`
+                    # Try to download it anyway
+                    pass
+
             except IndexError:
                 # Cannot download this song
                 continue
 
-            if (download_song(song, artist, url)):
+            if (download_song(artist, song, url)):
                 mark_completed(f, line)
 
     if (home_dir != os.getcwd()):
