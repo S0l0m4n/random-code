@@ -4,7 +4,7 @@ import os
 import shutil
 
 # Set up the YouTube Data API v3
-api_key = "AIzaSyDKhPSuDV82MYa-OTzu-TrrU9ij5ot1YRI" # my API key
+api_key = "AIzaSyAdMm1c7iygWlJBx-TOAjU8NBw7UbKK1Eo" # my API key
 youtube = build("youtube", "v3", developerKey=api_key)
 
 def search_youtube(query):
