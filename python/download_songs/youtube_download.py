@@ -10,7 +10,7 @@ youtube_cmd = \
 def download_song(artist, song, url):
     artist_part = '-'.join(artist.lower().split())
     song_part = '-'.join(song.lower().split())
-    file_name = artist_part + "__" + song_part + ".mp3"
+    file_name = artist_part + "__" + song_part + ".%(ext)s"
     return 0 == os.system(youtube_cmd.format(file_name=file_name, url=url))
     # (Command returns 0 on success)
 
@@ -72,8 +72,8 @@ if __name__ == "__main__":
         os.chdir(args.out_dir)
 
         for line in f:
-            # Extract the song name and look up video
-            fields = line.decode().split('|')
+            # Extract the song name and look up video, cleaning up white space
+            fields = [ field.strip() for field in  line.decode().split('|') ]
 
             song = fields[0]
             artist = fields[1]
@@ -86,8 +86,8 @@ if __name__ == "__main__":
                         continue
                 except IndexError:
                     # Song not marked with `-` or `#`
-                    # Try to download it anyway
-                    pass
+                    print(f"Mark not found: {song}")
+                    continue
 
             except IndexError:
                 # Cannot download this song
