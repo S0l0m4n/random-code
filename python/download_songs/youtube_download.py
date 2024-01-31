@@ -11,8 +11,10 @@ def download_song(artist, song, url):
     artist_part = '-'.join(artist.lower().split())
     song_part = '-'.join(song.lower().split())
     file_name = artist_part + "__" + song_part + ".%(ext)s"
-    return 0 == os.system(youtube_cmd.format(file_name=file_name, url=url))
-    # (Command returns 0 on success)
+    # NOTE: We are already in the songs dir
+    # NOTE: The `os.system` command returns 0 on success
+    return (artist_part + "__" + song_part + ".mp3" in os.listdir('.')
+        or  0 == os.system(youtube_cmd.format(file_name=file_name, url=url)))
 
 def mark_completed(f, line):
     """
@@ -33,6 +35,7 @@ def mark_completed(f, line):
         f.seek(-len(line), os.SEEK_CUR)  # move back to the start of the current line
         f.seek(marker_position, os.SEEK_CUR)  # move to the position of the marker
         f.write(b"#")  # write the mark completed symbol (`-` -> `#`)
+        f.flush()
         f.readline()  # move to the next line (read past the current `\n`)
     except ValueError:
         # Could not find `-` marker
@@ -93,7 +96,7 @@ if __name__ == "__main__":
                 # Cannot download this song
                 continue
 
-            if (download_song(artist, song, url)):
+            if download_song(artist, song, url):
                 mark_completed(f, line)
 
     if (home_dir != os.getcwd()):
