@@ -15,6 +15,8 @@ Initially the mark we write is `-`, indicating that the song needs to be downloa
 
 If the URL is already provided for the song on a given line, that line is skipped in the processing: we don't try to find the URL in this script, nor do we try to download it in the download script.
 
+**NOTE:** Each time the script runs, a backup of the songs file is first generated, incrementing the current backup file count. This prevents us from overwriting any work if the script produces bogus results and ruins the current songs file. If such misfortune does occur, simply find the best backup file to resume from, copy it in place of the songs file and, after making any necessary fix, rerun the script.
+
 Usage:
 ```
 $: python3 youtube_search.py -songs_file <songs>

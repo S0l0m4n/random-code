@@ -28,6 +28,16 @@ def search_youtube(query):
         print(str(e))
         return e
 
+def get_next_name(file_name):
+    """
+    The general form of the backup files is foo.bak.0, foo.bak.1, foo.bak.2, ...
+    """
+    bak_template = file_name + ".bak."
+    # Generate the list of files in the current directory matching the template
+    bak_files = [ x for x in os.listdir('.')
+                    if x[:len(bak_template)] == bak_template ]
+    return file_name + ".bak." + str(len(bak_files))
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Search for a music video on YouTube.")
     parser.add_argument("-songs_file", type=str, help="List of songs to look up")
@@ -41,7 +51,9 @@ if __name__ == "__main__":
     out_text = ""
 
     # Back up the original file
-    shutil.copyfile(args.songs_file, args.songs_file + ".bak")
+    # We keep producing backup files so that we don't overwrite any backups
+    bak_file_name = get_next_name(args.songs_file)
+    shutil.copyfile(args.songs_file, bak_file_name)
 
     with open(args.songs_file, 'r') as f:
         count = 0
