@@ -51,5 +51,14 @@ def generate_all_city_lists(countries):
         country_data[f"{cc}"] = get_all_cities_for_country(cc)
     return country_data
 
+COUNTRY_DATA_FILE = "country_data.json"
+
 if __name__ == '__main__':
-    pass
+#   countries = ['MU', 'UA']
+    countries = [ item['iso2'] for item in get_countries() ]
+    country_data = generate_all_city_lists(countries)
+    with open(COUNTRY_DATA_FILE, 'w') as f:
+        for key in country_data.keys():
+            f.write("{{'{key}': ".format(key=key))
+            json.dump(country_data[key], f)
+            f.write("}\n")
