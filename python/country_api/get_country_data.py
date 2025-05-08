@@ -5,6 +5,7 @@ import os
 import requests
 
 API_KEY = 'c2hmYVY5bkpDbXNrWVpWRlUyelZGeU9tRTJ1Y050cDN1NTZhcVJ5Ug=='
+DONE_SYMBOL = '#'
 
 headers = {
   'X-CSCAPI-KEY': API_KEY
@@ -52,7 +53,41 @@ def generate_all_city_lists(countries):
         country_data[f"{cc}"] = get_all_cities_for_country(cc)
     return country_data
 
-COUNTRY_DATA_FILE = "country_data.json"
+# Open the given file and write on a new line the following:
+#   - the country code
+#   - the done symbol ('#') after a space
+#   - newline character afterwards
+# e.g. For the country Australia with code 'AU', we would write:
+#       AU #
+def mark_country_as_done(record_file, country):
+    with open(record_file, 'a') as f:
+        f.write("{} {}\n".format(country, DONE_SYMBOL))
+
+# Open the given file and search for the country code with the done symbol
+# e.g. AU #
+def is_country_done(record_file, country):
+    if not os.path.isfile(record_file):
+        # file does not exist
+        return False
+
+    with open(record_file, 'r') as f:
+        for line in f:
+            if line[:2] != country:
+                # check next line
+                continue
+            # check done symbol
+            if len(line) == 5 and line[3] == DONE_SYMBOL:
+                # code found, stop now
+                return True
+            else:
+                raise Exception(
+                    "ERROR: Garbled line for {} in record file {}"
+                    .format(country, record_file))
+
+    # code not found in file
+    return False
+
+COUNTRY_RECORD_FILE = "country_records.txt"
 COUNTRY_DATA_DIR = "data"
 
 if __name__ == '__main__':
