@@ -101,6 +101,11 @@ if __name__ == '__main__':
     # write each country's cities to a unique file
     print("Generating city list for each country...")
     for code in codes:
+        # check if the country has already been handled
+        if is_country_done(COUNTRY_RECORD_FILE, code):
+            # skip to the next code
+            continue
+
         # get the country name, to append to each line
         country = \
             [ item['name'] for item in countries if item['iso2'] == code ].pop()
@@ -125,3 +130,6 @@ if __name__ == '__main__':
                     for city in cities[state]:
                         # finally, write each city and state (and country)
                         f.write(city + ", " + state + ", " + country + "\n")
+
+        # mark the country as done for future running
+        mark_country_as_done(COUNTRY_RECORD_FILE, code)
