@@ -7,6 +7,9 @@ import requests
 API_KEY = 'c2hmYVY5bkpDbXNrWVpWRlUyelZGeU9tRTJ1Y050cDN1NTZhcVJ5Ug=='
 DONE_SYMBOL = '#'
 
+COUNTRY_RECORD_FILE = "country_records.txt"
+COUNTRY_DATA_DIR = "data"
+
 headers = {
   'X-CSCAPI-KEY': API_KEY
 }
@@ -60,35 +63,25 @@ def generate_all_city_lists(countries):
 # e.g. For the country Australia with code 'AU', we would write:
 #       AU #
 def mark_country_as_done(record_file, country):
+    try:
+        with open(record_file, 'r') as f:
+            for line in f:
+                if line[:2] != country:
+                    continue
+                # line found, assume country has already been written
+                return
+    except FileNotFoundError:
+        # file does not yet exist, so continue to create it
+        pass
+
     with open(record_file, 'a') as f:
         f.write("{} {}\n".format(country, DONE_SYMBOL))
 
-# Open the given file and search for the country code with the done symbol
-# e.g. AU #
-def is_country_done(record_file, country):
-    if not os.path.isfile(record_file):
-        # file does not exist
-        return False
-
-    with open(record_file, 'r') as f:
-        for line in f:
-            if line[:2] != country:
-                # check next line
-                continue
-            # check done symbol
-            if len(line) == 5 and line[3] == DONE_SYMBOL:
-                # code found, stop now
-                return True
-            else:
-                raise Exception(
-                    "ERROR: Garbled line for {} in record file {}"
-                    .format(country, record_file))
-
-    # code not found in file
-    return False
-
-COUNTRY_RECORD_FILE = "country_records.txt"
-COUNTRY_DATA_DIR = "data"
+# Check if the data file for the country exists, e.g. AU.txt
+# If not, we assume the country is not done
+def is_country_done(country):
+    file_name = "{}/{}.txt".format(COUNTRY_DATA_DIR, country)
+    return os.path.isfile(file_name)
 
 if __name__ == '__main__':
     assert os.path.isdir(COUNTRY_DATA_DIR), \
@@ -102,7 +95,7 @@ if __name__ == '__main__':
     print("Generating city list for each country...")
     for code in codes:
         # check if the country has already been handled
-        if is_country_done(COUNTRY_RECORD_FILE, code):
+        if is_country_done(code):
             # skip to the next code
             continue
 
@@ -128,6 +121,14 @@ if __name__ == '__main__':
                     pass
                 else:
                     for city in cities[state]:
+                        if city == state:
+                            # do not write any city with the same name as state
+                            # i.e. we do not want any lines like this:
+                            #   X, X, country
+                            # it will simply be written as:
+                            #   X, country
+                            # (and already have been written)
+                            continue
                         # finally, write each city and state (and country)
                         f.write(city + ", " + state + ", " + country + "\n")
 
