@@ -88,8 +88,8 @@ if __name__ == '__main__':
             "ERROR: Directory `{}` does not exist!".format(COUNTRY_DATA_DIR)
     countries = get_countries()
 
-    codes = ['MU', 'UA']
-#   codes = countries.keys()
+#   codes = ['MU', 'UA']
+    codes = [ item['iso2'] for item in countries ]
 
     # write each country's cities to a unique file
     print("Generating city list for each country...")
